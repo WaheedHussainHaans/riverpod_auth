@@ -1,4 +1,4 @@
 class AppConstants {
-  static const String valid_phone = '123456';
-  static String valid_otp = '1234';
+  static const String validPhone = '123456';
+  static const String validOtp = '1234';
 }

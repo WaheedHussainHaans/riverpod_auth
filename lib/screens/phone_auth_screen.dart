@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import '../models/auth_state.dart';
 import '../providers/auth_provider.dart';
 import 'otp_validation_screen.dart';
 
@@ -11,21 +12,18 @@ class PhoneAuthScreen extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final phoneController = useTextEditingController();
     final authState = ref.watch(authProvider);
-    // Use effect to listen for changes in authState
-    useEffect(() {
-      if (authState.otpSent) {
-        // Navigate to OTP validation screen
-        WidgetsBinding.instance.addPostFrameCallback((_) {
+
+    ref.listen<AsyncValue<AuthState>>(authProvider, (_, state) {
+      state.whenData((value) {
+        if (value.otpSent) {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => const OtpValidationScreen(),
-            ),
+                builder: (context) => const OtpValidationScreen()),
           );
-        });
-      }
-      return null;
-    }, [authState.otpSent]);
+        }
+      });
+    });
 
     return Scaffold(
       appBar: AppBar(title: const Text('Phone Authentication')),
@@ -46,15 +44,17 @@ class PhoneAuthScreen extends HookConsumerWidget {
               },
               child: const Text('Send OTP'),
             ),
-            if (authState.error != null)
-              Padding(
+            authState.when(
+              data: (_) => const SizedBox.shrink(),
+              loading: () => const CircularProgressIndicator(),
+              error: (error, _) => Padding(
                 padding: const EdgeInsets.only(top: 20),
                 child: Text(
-                  authState.error!,
+                  error.toString(),
                   style: const TextStyle(color: Colors.red),
                 ),
               ),
-            if (authState.isLoading) const CircularProgressIndicator(),
+            ),
           ],
         ),
       ),

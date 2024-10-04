@@ -30,10 +30,16 @@ class OtpValidationScreen extends HookConsumerWidget {
               },
               child: const Text('Validate OTP'),
             ),
-            if (authState.isLoading) const CircularProgressIndicator(),
-            if (authState.isAuthenticated)
-              const Text('Authentication Successful!'),
-            if (authState.error != null) Text('Error: ${authState.error}'),
+            authState.when(
+              data: (state) => state.isAuthenticated
+                  ? const Text('Authentication Successful!')
+                  : const SizedBox.shrink(),
+              loading: () => const CircularProgressIndicator(),
+              error: (error, _) => Text(
+                'Error: ${error.toString()}',
+                style: const TextStyle(color: Colors.red),
+              ),
+            ),
           ],
         ),
       ),

@@ -1,27 +1,13 @@
 class AuthState {
-  final bool isLoading;
   final bool otpSent;
   final bool isAuthenticated;
-  final String? error;
 
-  AuthState({
-    this.isLoading = false,
-    this.otpSent = false,
-    this.isAuthenticated = false,
-    this.error,
-  });
+  AuthState({this.otpSent = false, this.isAuthenticated = false});
 
-  AuthState copyWith({
-    bool? isLoading,
-    bool? otpSent,
-    bool? isAuthenticated,
-    String? error,
-  }) {
+  AuthState copyWith({bool? otpSent, bool? isAuthenticated}) {
     return AuthState(
-      isLoading: isLoading ?? this.isLoading,
-      otpSent: otpSent ?? this.otpSent,
+      otpSent: otpSent ?? false,
       isAuthenticated: isAuthenticated ?? this.isAuthenticated,
-      error: error,
     );
   }
 }

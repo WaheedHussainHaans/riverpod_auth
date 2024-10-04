@@ -4,7 +4,7 @@ class AuthService {
   Future<void> sendOTP(String phoneNumber) async {
     await Future.delayed(
         const Duration(seconds: 2)); // Simulating network delay
-    if (phoneNumber != AppConstants.valid_phone) {
+    if (phoneNumber != AppConstants.validPhone) {
       throw Exception('Invalid phone number');
     }
   }
@@ -12,6 +12,9 @@ class AuthService {
   Future<bool> validateOTP(String otp) async {
     await Future.delayed(
         const Duration(seconds: 1)); // Simulating network delay
-    return otp == AppConstants.valid_otp;
+    if (otp != AppConstants.validOtp) {
+      throw Exception('Invalid phone number');
+    }
+    return otp == AppConstants.validOtp;
   }
 }
