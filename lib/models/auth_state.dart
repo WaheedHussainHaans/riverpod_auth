@@ -21,7 +21,7 @@ class AuthState {
       isLoading: isLoading ?? this.isLoading,
       otpSent: otpSent ?? this.otpSent,
       isAuthenticated: isAuthenticated ?? this.isAuthenticated,
-      error: error ?? this.error,
+      error: error,
     );
   }
 }

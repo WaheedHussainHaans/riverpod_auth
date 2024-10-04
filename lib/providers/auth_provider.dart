@@ -8,10 +8,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
   AuthNotifier(this._authService) : super(AuthState());
 
   Future<void> sendOTP(String phoneNumber) async {
-    state = state.copyWith(isLoading: true, error: null);
+    state = state.copyWith(isLoading: true, error: null, otpSent: false);
     try {
       await _authService.sendOTP(phoneNumber);
-      state = state.copyWith(isLoading: false, otpSent: true);
+      state = state.copyWith(isLoading: false, otpSent: true, error: null);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
     }
@@ -22,6 +22,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
     try {
       final isValid = await _authService.validateOTP(otp);
       state = state.copyWith(isLoading: false, isAuthenticated: isValid);
+      if (!isValid) {
+        state = state.copyWith(error: 'Invalid OTP. Please try again.');
+      }
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
     }

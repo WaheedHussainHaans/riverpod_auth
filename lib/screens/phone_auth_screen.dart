@@ -11,6 +11,21 @@ class PhoneAuthScreen extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final phoneController = useTextEditingController();
     final authState = ref.watch(authProvider);
+    // Use effect to listen for changes in authState
+    useEffect(() {
+      if (authState.otpSent) {
+        // Navigate to OTP validation screen
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const OtpValidationScreen(),
+            ),
+          );
+        });
+      }
+      return null;
+    }, [authState.otpSent]);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Phone Authentication')),
@@ -31,18 +46,15 @@ class PhoneAuthScreen extends HookConsumerWidget {
               },
               child: const Text('Send OTP'),
             ),
-            if (authState.isLoading) const CircularProgressIndicator(),
-            if (authState.otpSent)
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const OtpValidationScreen()),
-                  );
-                },
-                child: const Text('Enter OTP'),
+            if (authState.error != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 20),
+                child: Text(
+                  authState.error!,
+                  style: const TextStyle(color: Colors.red),
+                ),
               ),
+            if (authState.isLoading) const CircularProgressIndicator(),
           ],
         ),
       ),
