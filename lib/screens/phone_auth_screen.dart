@@ -1,27 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import '../models/auth_state.dart';
 import '../providers/auth_provider.dart';
 import 'otp_validation_screen.dart';
 
-class PhoneAuthScreen extends HookConsumerWidget {
-  const PhoneAuthScreen({super.key});
+class PhoneAuthScreen extends ConsumerWidget {
+  final TextEditingController _phoneController = TextEditingController();
+
+  PhoneAuthScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final phoneController = useTextEditingController();
-    final authState = ref.watch(authProvider);
+    final sendOtpState = ref.watch(sendOtpProvider);
 
-    ref.listen<AsyncValue<AuthState>>(authProvider, (_, state) {
-      state.whenData((value) {
-        if (value.otpSent) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => const OtpValidationScreen()),
-          );
-        }
+    ref.listen<AsyncValue<void>>(sendOtpProvider, (_, state) {
+      state.whenData((_) {
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (context) => OtpValidationScreen()),
+        );
       });
     });
 
@@ -33,28 +28,27 @@ class PhoneAuthScreen extends HookConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             TextField(
-              controller: phoneController,
+              controller: _phoneController,
               decoration: const InputDecoration(labelText: 'Phone Number'),
               keyboardType: TextInputType.phone,
             ),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () {
-                ref.read(authProvider.notifier).sendOTP(phoneController.text);
-              },
-              child: const Text('Send OTP'),
+              onPressed: sendOtpState.isLoading
+                  ? null
+                  : () {
+                      ref.read(phoneNumberProvider.notifier).state =
+                          _phoneController.text;
+                      ref.refresh(sendOtpProvider);
+                    },
+              child: sendOtpState.isLoading
+                  ? const CircularProgressIndicator()
+                  : const Text('Send OTP'),
             ),
-            authState.when(
-              data: (_) => const SizedBox.shrink(),
-              loading: () => const CircularProgressIndicator(),
-              error: (error, _) => Padding(
-                padding: const EdgeInsets.only(top: 20),
-                child: Text(
-                  error.toString(),
-                  style: const TextStyle(color: Colors.red),
-                ),
-              ),
-            ),
+            const SizedBox(height: 20),
+            if (sendOtpState.hasError)
+              Text(sendOtpState.error.toString(),
+                  style: const TextStyle(color: Colors.red)),
           ],
         ),
       ),

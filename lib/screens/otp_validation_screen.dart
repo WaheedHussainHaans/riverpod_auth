@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../providers/auth_provider.dart';
 
-class OtpValidationScreen extends HookConsumerWidget {
-  const OtpValidationScreen({super.key});
+class OtpValidationScreen extends ConsumerWidget {
+  final TextEditingController _otpController = TextEditingController();
+
+  OtpValidationScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final otpController = useTextEditingController();
-    final authState = ref.watch(authProvider);
+    final validateOtpState = ref.watch(validateOtpProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('OTP Validation')),
@@ -19,27 +19,35 @@ class OtpValidationScreen extends HookConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             TextField(
-              controller: otpController,
+              controller: _otpController,
               decoration: const InputDecoration(labelText: 'Enter OTP'),
               keyboardType: TextInputType.number,
             ),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () {
-                ref.read(authProvider.notifier).validateOTP(otpController.text);
-              },
-              child: const Text('Validate OTP'),
+              onPressed: validateOtpState.isLoading
+                  ? null
+                  : () {
+                      ref.read(otpProvider.notifier).state =
+                          _otpController.text;
+                      ref.refresh(validateOtpProvider);
+                    },
+              child: validateOtpState.isLoading
+                  ? const CircularProgressIndicator()
+                  : const Text('Validate OTP'),
             ),
-            authState.when(
-              data: (state) => state.isAuthenticated
-                  ? const Text('Authentication Successful!')
-                  : const SizedBox.shrink(),
-              loading: () => const CircularProgressIndicator(),
-              error: (error, _) => Text(
-                'Error: ${error.toString()}',
-                style: const TextStyle(color: Colors.red),
+            const SizedBox(height: 20),
+            if (validateOtpState.hasValue)
+              Text(
+                validateOtpState.value!
+                    ? 'Authentication Successful!'
+                    : 'Invalid OTP',
+                style: TextStyle(
+                    color: validateOtpState.value! ? Colors.green : Colors.red),
               ),
-            ),
+            if (validateOtpState.hasError)
+              Text(validateOtpState.error.toString(),
+                  style: const TextStyle(color: Colors.red)),
           ],
         ),
       ),
