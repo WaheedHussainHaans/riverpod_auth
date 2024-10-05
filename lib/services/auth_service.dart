@@ -13,7 +13,7 @@ class AuthService {
     await Future.delayed(
         const Duration(seconds: 1)); // Simulating network delay
     if (otp != AppConstants.validOtp) {
-      throw Exception('Invalid phone number');
+      throw Exception('Invalid OTP');
     }
     return otp == AppConstants.validOtp;
   }

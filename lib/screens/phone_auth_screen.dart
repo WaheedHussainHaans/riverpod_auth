@@ -12,11 +12,13 @@ class PhoneAuthScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final sendOtpState = ref.watch(sendOtpProvider);
 
-    ref.listen<AsyncValue<void>>(sendOtpProvider, (_, state) {
-      state.whenData((_) {
-        Navigator.of(context).push(
-          MaterialPageRoute(builder: (context) => OtpValidationScreen()),
-        );
+    ref.listen<AsyncValue<String>>(sendOtpProvider, (_, state) {
+      state.whenData((message) {
+        if (message == 'OTP sent successfully') {
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (context) => OtpValidationScreen()),
+          );
+        }
       });
     });
 
@@ -39,7 +41,7 @@ class PhoneAuthScreen extends ConsumerWidget {
                   : () {
                       ref.read(phoneNumberProvider.notifier).state =
                           _phoneController.text;
-                      ref.refresh(sendOtpProvider);
+                      ref.read(sendOtpTriggerProvider.notifier).state = true;
                     },
               child: sendOtpState.isLoading
                   ? const CircularProgressIndicator()

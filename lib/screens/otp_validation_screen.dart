@@ -30,20 +30,22 @@ class OtpValidationScreen extends ConsumerWidget {
                   : () {
                       ref.read(otpProvider.notifier).state =
                           _otpController.text;
-                      ref.refresh(validateOtpProvider);
+                      ref.read(validateOtpTriggerProvider.notifier).state =
+                          true;
                     },
               child: validateOtpState.isLoading
                   ? const CircularProgressIndicator()
                   : const Text('Validate OTP'),
             ),
             const SizedBox(height: 20),
-            if (validateOtpState.hasValue)
+            if (validateOtpState.hasValue && validateOtpState.value!.isNotEmpty)
               Text(
-                validateOtpState.value!
-                    ? 'Authentication Successful!'
-                    : 'Invalid OTP',
+                validateOtpState.value!,
                 style: TextStyle(
-                    color: validateOtpState.value! ? Colors.green : Colors.red),
+                    color:
+                        validateOtpState.value! == 'OTP validated successfully'
+                            ? Colors.green
+                            : Colors.red),
               ),
             if (validateOtpState.hasError)
               Text(validateOtpState.error.toString(),

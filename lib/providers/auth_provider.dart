@@ -7,29 +7,34 @@ final authServiceProvider = Provider<AuthService>((ref) => AuthService());
 final phoneNumberProvider = StateProvider<String>((ref) => '');
 final otpProvider = StateProvider<String>((ref) => '');
 
+// Trigger providers
+final sendOtpTriggerProvider = StateProvider<bool>((ref) => false);
+final validateOtpTriggerProvider = StateProvider<bool>((ref) => false);
+
 // Send OTP provider
-final sendOtpProvider = FutureProvider.autoDispose<void>((ref) async {
-  // This will prevent the FutureProvider from running automatically
-  // It will only run when manually refreshed
-  ref.keepAlive(); // = true;
-
+final sendOtpProvider = FutureProvider<String>((ref) async {
+  final shouldRun = ref.watch(sendOtpTriggerProvider);
   final phoneNumber = ref.watch(phoneNumberProvider);
-  if (phoneNumber.isEmpty) throw Exception('Phone number is empty');
 
-  final authService = ref.watch(authServiceProvider);
+  if (!shouldRun || phoneNumber.isEmpty) {
+    return ''; // Return empty string if we shouldn't run or phone number is empty
+  }
+
+  final authService = ref.read(authServiceProvider);
   await authService.sendOTP(phoneNumber);
+  return 'OTP sent successfully';
 });
 
 // Validate OTP provider
-final validateOtpProvider = FutureProvider.autoDispose<bool>((ref) async {
-  // This will prevent the FutureProvider from running automatically
-  // It will only run when manually refreshed
-  ref.keepAlive();
-  // maintainState = true;
-
+final validateOtpProvider = FutureProvider<String>((ref) async {
+  final shouldRun = ref.watch(validateOtpTriggerProvider);
   final otp = ref.watch(otpProvider);
-  if (otp.isEmpty) throw Exception('Phone number is empty');
 
-  final authService = ref.watch(authServiceProvider);
-  return await authService.validateOTP(otp);
+  if (!shouldRun || otp.isEmpty) {
+    return ''; // Return empty string if we shouldn't run or OTP is empty
+  }
+
+  final authService = ref.read(authServiceProvider);
+  final isValid = await authService.validateOTP(otp);
+  return isValid ? 'OTP validated successfully' : 'Invalid OTP';
 });
